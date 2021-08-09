@@ -1,1 +1,1 @@
-# gra
+# Additional lessons to imrove Python knowledge. Exercises taken from the book 'Code with Python'
