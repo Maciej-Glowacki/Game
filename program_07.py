@@ -13,6 +13,10 @@ class Game:
         self.game_finish = False
         self.actual_room = 5
         self.start_time = None
+        self.all_keys_found = False
+        self.show_hidden_door = False
+        self.enter_last_door = False
+        self.shift_ok = True
 
         # graphs connected with start and finish of the game
         self.intro_canvas = Actor('intro-canvas.png')
@@ -111,6 +115,51 @@ class Game:
         if self.hero.frame > 8:
             self.hero.frame = 1
 
+    def enter_door(self):
+        room = self.rooms[self.actual_room]
+        if len(room.doors) and self.shift_ok:
+            for door in room.doors:
+                if (
+                    self.hero.x > door.x_left_door
+                    and self.hero.x < door.x_right_door
+                    and door.open
+                    and self.shift_ok
+                ):
+                    self.shift_ok = False
+                    new_room = door.next_room_number
+                    new_background_image = self.rooms[new_room].file_name
+                    self.background_active = new_background_image
+                    self.actual_room = new_room
+                    clock.schedule_unique(self.shift_do, 0.5)
+                    break
+    
+    def shift_do(self):
+        self.shift_ok = True
+
+
+    def draw_key(self):
+        for key in self.keys_in_pocket:
+            if not key.in_pocket and self.actual_room == key.room_number:
+                screen.blit(key.file_name, (key.place_on_floor, 475))
+
+
+    def get_key(self):
+        def check_all_keys(keys):
+            for any_key in keys:
+                if any_key.in_pocket is False:
+                    return False
+                else:
+                    return True
+        
+        for key in self.keys_in_pocket:
+            if (
+                not key.in_pocket
+                and self.actual_room == key.room_number
+                and (120 > self.hero.x - key.place_on_floor >= 0)
+            ):
+                key.in_pocket = True
+                self.all_keys_found = check_all_keys(self.keys_in_pocket)
+
     def update_game(self):
         if not self.game_start and keyboard.space:
             self.game_start = True
@@ -122,6 +171,12 @@ class Game:
                 self.hero_move('right')
             if keyboard.left:
                 self.hero_move('left')
+            if keyboard.up:
+                self.enter_door()
+            if keyboard.down:
+                self.get_key()
+            if self.all_keys_found:
+                self.show_hidden_door = True
 
     def draw_scene(self):
         screen.blit(self.background_active, self.background_position)
