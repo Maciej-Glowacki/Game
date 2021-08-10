@@ -1,3 +1,5 @@
+from datetime import datetime
+
 WIDTH = 1280
 HEIGHT = 640
 
@@ -8,7 +10,7 @@ class Game:
         self.background_position = (0, 0)
         self.game_start = False
         self.game_finish = False
-        self.actual_room = 6
+        self.actual_room = 5
         self.start_time = None
 
         # graphs connected with start and finish of the game
@@ -21,9 +23,66 @@ class Game:
         self.floor_level = 460
         self.hero = Actor('character-right-01.png')
         self.hero.pos = (WIDTH / 2, self.floor_level)
+        self.hero.height = 256
+        self.hero.width = 140
+        self.hero.frame = 1
+        self.animation_step = 15
         
         # dict with the names of the rooms
         self.rooms = rooms_in_game
+
+    # keys
+        self.pocket = Actor('pocket.png')
+        self.pocket.pos = (1000, 100)
+        self.keys_in_pocket = [key_00, key_01, key_02, key_03, key_04]
+
+
+    def draw_intro(self):
+        def draw_text(text, x_offset, y_offset, fontsize = 20):
+            screen.draw.text(
+                text,
+                (self.intro_canvas.x + x_offset, self.intro_canvas.y + y_offset),
+                fontname = 'ptsansnarrowbold.ttf',
+                fontsize = fontsize,
+                color = (187, 96, 191),
+            )
+
+    # starting scene
+        self.intro_canvas.draw()
+        animate(self.intro_canvas, pos = (640, 320), duration = 0.3, tween = 'linear')
+    
+        draw_text('Max - comming back to school', -450, -200, fontsize = 32)
+
+    # introduction - storytelling
+        story = (
+            'How about creating an adventure game where '
+            'the hero - MAX solves all puzzles to reach the final. '
+            'What if I add that action takes place in '
+            'the most boring place - school! '
+            'Maybe together we can make this place a little enlive? '
+            'Find and collect all the keys to enter '
+            'an auditorium bursting with bass, to the concert of the hottest band in Europe!'
+            '\n\n'
+            'to quit - press "Q"'
+            '\n\n'
+            'to start - press "SPACE"' 
+        )
+
+        screen.draw.text(
+            story,
+            (self.intro_canvas.x - 450, self.intro_canvas.y - 160),
+            width = 900,
+            fontname = 'ptsansnarrowregular.ttf',
+            fontsize = 20,
+            color = (0, 0, 0),
+        )
+
+    # control keyboards
+        draw_text('go through the door', 200, -55)
+        draw_text('go left', 120, 175)
+        draw_text('take the key', 230, 175)
+        draw_text('go right', 330, 175)
+
 
     def update_game(self):
         pass
@@ -32,46 +91,11 @@ class Game:
         screen.blit(self.background_active, self.background_position)
         if self.game_start:
             self.hero.draw()
-        elif self.game_finish():
+        elif self.game_finish:
             pass
         else:
             self.draw_intro()
     
-    def draw_intro(self):
-        def draw_text(text, x_offset, y_offset, fontsize=20):
-            screen.draw.text(
-                text,
-                (self.intro_canvas.x + x_offset, self.intro_canvas.y + y_offset),
-                fontname = 'ptsansnarrowbold.ttf',
-                fontsize = fontsize,
-                color = (187, 96, 191),
-                background = None,
-            )
-    
-    # starting scene
-    self.intro_canvas.draw()
-    animate(self.intro_canvas, pos = (640, 320), duration = 0.3, tween = 'linear')
-    draw_text('Max - comming back to school', -450, -200, fontsize = 32)
-
-    # introduction - storytelling
-
-    story = (
-        'How about creating an adventure game where'
-        'the hero - MAX solves all puzzles to reach the final.'
-        'What if I add that action takes place in'
-        'the most boring place - school!'
-        'Maybe together we can make this place a little enlive?'
-        'Find and collect all the keys to enter'
-        'an auditorium bursting with bass, to the concert of the hottest band in Europe!'
-        '\n\n'
-        'to quit - press "Q"'
-        '\n\n'
-        'to start - press "SPACE"' 
-    )
-
-    screen.draw.text(story,
-    (self.intro_canvas.x - 450, self.intro_canvas.y - 160)
-    )
 
 class Key:
     def __init__(self, file_name, in_pocket, room_number, place_on_floor):
