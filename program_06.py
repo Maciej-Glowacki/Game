@@ -96,12 +96,32 @@ class Game:
             else:
                 screen.blit('question-mark.png', pos)
 
+    def hero_move(self, direction):
+        if direction == 'right':
+            if self.hero.x < WIDTH - self.hero.width:
+                self.hero.x += self.animation_step
+        if direction == 'left':
+            if self.hero.x > self.hero.width:
+                self.hero.x -= self.animation_step
+    
+        # setting proper image for move imitation
+
+        self.hero.image = f'character-{direction}-0{self.hero.frame}.png'
+        self.hero.frame += 1
+        if self.hero.frame > 8:
+            self.hero.frame = 1
+
     def update_game(self):
         if not self.game_start and keyboard.space:
             self.game_start = True
             self.start_time = datetime.now()
         if keyboard.q:
             quit()
+        if self.game_start:
+            if keyboard.right:
+                self.hero_move('right')
+            if keyboard.left:
+                self.hero_move('left')
 
     def draw_scene(self):
         screen.blit(self.background_active, self.background_position)
