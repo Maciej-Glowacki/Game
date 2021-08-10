@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 WIDTH = 1280
 HEIGHT = 640
 
@@ -31,7 +32,7 @@ class Game:
         # dict with the names of the rooms
         self.rooms = rooms_in_game
 
-    # keys
+        # keys
         self.pocket = Actor('pocket.png')
         self.pocket.pos = (1000, 100)
         self.keys_in_pocket = [key_00, key_01, key_02, key_03, key_04]
@@ -83,13 +84,29 @@ class Game:
         draw_text('take the key', 230, 175)
         draw_text('go right', 330, 175)
 
+    def draw_pocket(self):
+        self.pocket.draw()
+        key_pos = [-200, -100, 0, 100, 200]
+        temp = 0
+        for key in self.keys_in_pocket:
+            pos = (self.pocket.x + key_pos[temp] - 45, self.pocket.y - 10)
+            temp += 1
+            if key.in_pocket:
+                screen.blit(key.file_name, pos)
+            else:
+                screen.blit('question-mark.png', pos)
 
     def update_game(self):
-        pass
+        if not self.game_start and keyboard.space:
+            self.game_start = True
+            self.start_time = datetime.now()
+        if keyboard.q:
+            quit()
 
     def draw_scene(self):
         screen.blit(self.background_active, self.background_position)
         if self.game_start:
+            self.draw_pocket()
             self.hero.draw()
         elif self.game_finish:
             pass
