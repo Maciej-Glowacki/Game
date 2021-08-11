@@ -7,6 +7,7 @@ HEIGHT = 640
 
 class Game:
     def __init__(self, background_active, rooms_in_game):
+        
         self.background_active = background_active
         self.background_position = (0, 0)
         self.game_start = False
@@ -17,6 +18,7 @@ class Game:
         self.show_hidden_door = False
         self.enter_last_door = False
         self.shift_ok = True
+        self.game_time = None
 
         # graphs connected with start and finish of the game
         self.intro_canvas = Actor('intro-canvas.png')
@@ -28,6 +30,8 @@ class Game:
         self.floor_level = 460
         self.hero = Actor('character-right-01.png')
         self.hero.pos = (WIDTH / 2, self.floor_level)
+        
+        # hero size
         self.hero.height = 256
         self.hero.width = 140
         self.hero.frame = 1
@@ -101,12 +105,24 @@ class Game:
                 screen.blit('question-mark.png', pos)
 
     def hero_move(self, direction):
+        move_flag = self.rooms[self.actual_room].can_move_lr
         if direction == 'right':
             if self.hero.x < WIDTH - self.hero.width:
                 self.hero.x += self.animation_step
+            else:
+                if move_flag == 2 or move_flag == 3:
+                    self.actual_room += 1
+                    self.hero.x = 10
         if direction == 'left':
             if self.hero.x > self.hero.width:
                 self.hero.x -= self.animation_step
+            else:
+                if move_flag == 1 or move_flag ==3:
+                    self.actual_room -= 1
+                    self.hero.x = WIDTH - self.hero.width
+        
+        new_background_image = self.rooms[self.actual_room].file_name
+        self.background_active = new_background_image
     
         # setting proper image for move imitation
 
@@ -131,6 +147,9 @@ class Game:
                     self.background_active = new_background_image
                     self.actual_room = new_room
                     clock.schedule_unique(self.shift_do, 0.5)
+                    if not self.enter_last_door and new_room == 13:
+                        self.enter_last_door = True
+                        self.game_time = datetime.datetime.now() - self.start_time
                     break
     
     def shift_do(self):
@@ -149,6 +168,7 @@ class Game:
                 if any_key.in_pocket is False:
                     return False
                 else:
+                    self.rooms[8].doors[1].open = True
                     return True
         
         for key in self.keys_in_pocket:
@@ -177,17 +197,39 @@ class Game:
                 self.get_key()
             if self.all_keys_found:
                 self.show_hidden_door = True
+            if self.actual_room == 13 and self.enter_last_door:
+                self.game_finish = Trueself.game_start = False
 
     def draw_scene(self):
         screen.blit(self.background_active, self.background_position)
         if self.game_start:
             self.draw_pocket()
-            self.hero.draw()
+            self.draw_key()
+            if self.all_keys_found and self.actual_room == 8:
+                screen.blit('hidden-door-01.png', (206, 191))
         elif self.game_finish:
-            pass
+            self.draw_finish()
         else:
             self.draw_intro()
     
+    def draw_finish(self):
+        self.game_over_canvas.draw()
+        animate(self.game_over_canvas, pos=(320, 320), duration = 0.3, tween = 'linear')
+        screen.draw.text(
+            'Max - comming back to school',
+            (self.game_over_canvas.x - 140, self.game_over_canvas.y - 180),
+            fontname = 'ptsansnarrowbold.ttf',
+            fontsize = 32,
+            color = (187, 96, 191),
+        )
+
+        story = (f'Your time: {self.game_time} \n\n Press Q to end the game!')
+        screen.draw.text(
+            story,
+            (self.game_over_canvas.x - 140, self.game_over_canvas.y - 120),
+            fontsize = 20,
+            color = (0, 0, 0)
+        )
 
 class Key:
     def __init__(self, file_name, in_pocket, room_number, place_on_floor):
